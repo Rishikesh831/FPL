@@ -66,6 +66,26 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Draft saved!");
     }
     });
+    
+    // Download PDF on click
+    const download = document.getElementById("download");
+    download.addEventListener("click", () => {
+        const output = document.getElementById("proposalOutput");
+        if (!output.innerHTML.trim()) {
+            alert("Please generate the proposal first.");
+            return;
+        }
+        const element = output;
+        const opt = {
+            margin:       0.5,
+            filename:     'proposal.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        // New Promise-based usage:
+        html2pdf().set(opt).from(element).save();
+    });
 
   // --- helpers ---
     function escapeHtml(unsafe) {
