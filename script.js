@@ -7,9 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const template = document.getElementById("templateDropdown");
     const output = document.getElementById("proposalOutput");
     const generate = document.getElementById("generate");
-    const save = document.getElementById("save"); // <-- was missing
+    const save = document.getElementById("save");
+    const download = document.getElementById("download");
 
-  // Defensive check: make sure required elements exist
+  // Defensive check
     if (!generate || !save || !output) {
         console.error("Missing essential DOM elements:", { generate, save, output });
         return;
@@ -28,9 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Generate proposal on click
     generate.addEventListener("click", () => {
-    // basic validation
-    if (!clientName.value || !hourlyRate.value || !hours.value || !jobDesc.value) {
-        alert("Please fill in client name, hourly rate, estimated hours and job description.");
+        if (!clientName.value || !hourlyRate.value || !hours.value || !jobDesc.value) {
+        alert("Please fill in all fields.");
         return;
         }
 
@@ -46,6 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>Thank you for considering this proposal. Looking forward to collaborating!</p>
     `;
 
+    // Clear old styles
+    output.classList.remove("template1", "template2", "template3");
+
+    // Apply selected template (auto format)
+    const templateClass = template.value.toLowerCase().replace(/\s+/g, "");
+    output.classList.add(templateClass);
+
+    // Display proposal
     output.innerHTML = proposal;
     });
 
@@ -59,38 +67,34 @@ document.addEventListener('DOMContentLoaded', () => {
         template: template.value || ""
     };
     localStorage.setItem("proposalDraft", JSON.stringify(draft));
-    // nice non-blocking toast: minimal fallback to alert for now
+
     if (window.Toastify) {
         Toastify({ text: "Draft saved ✔", duration: 1500 }).showToast();
     } else {
         alert("Draft saved!");
     }
     });
-    
-    // Download PDF on click
-    const download = document.getElementById("download");
+
+  // Download PDF
     download.addEventListener("click", () => {
-        const output = document.getElementById("proposalOutput");
-        if (!output.innerHTML.trim()) {
-            alert("Please generate the proposal first.");
-            return;
-        }
-        const element = output;
-        const opt = {
-            margin:       0.5,
-            filename:     'proposal.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-        // New Promise-based usage:
-        html2pdf().set(opt).from(element).save();
+    if (!output.innerHTML.trim()) {
+        alert("Please generate the proposal first.");
+        return;
+    }
+    const opt = {
+        margin: 0.5,
+        filename: `proposal_${clientName.value || 'draft'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(output).save();
     });
 
   // --- helpers ---
     function escapeHtml(unsafe) {
-    if (!unsafe) return "";
-    return unsafe
+        if (!unsafe) return "";
+        return unsafe
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -99,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function nl2br(str) {
-    if (!str) return "";
-    return str.replace(/\n/g, "<br/>");
+        if (!str) return "";
+        return str.replace(/\n/g, "<br/>");
     }
 });
