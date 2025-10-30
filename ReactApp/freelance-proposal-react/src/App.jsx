@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+ // make sure this is imported
 
 function App() {
   const [clientName, setClientName] = useState("");
@@ -10,7 +11,7 @@ function App() {
   const [template, setTemplate] = useState("");
   const [proposal, setProposal] = useState("");
 
-  // ✅ Load saved draft
+  // ✅ Load saved draft from localStorage
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("proposalDraft"));
     if (saved) {
@@ -22,7 +23,7 @@ function App() {
     }
   }, []);
 
-  // ✅ Live preview — updates automatically whenever any field changes
+  // ✅ Auto-update live preview
   useEffect(() => {
     if (!clientName && !hourlyRate && !hours && !jobDesc) {
       setProposal("");
@@ -38,11 +39,21 @@ function App() {
       <p><strong>Estimated Hours:</strong> ${hours || "—"}</p>
       <p><strong>Hourly Rate:</strong> $${hourlyRate || "—"}/hr</p>
       <p><strong>Total Estimated Cost:</strong> $${total}</p>
-      <p><strong>Selected Template:</strong> ${template || "None"}</p>
+      
       <p>Thank you for considering this proposal. Looking forward to collaborating!</p>
     `;
     setProposal(generated);
   }, [clientName, hourlyRate, hours, jobDesc, template]);
+
+  // ✅ Fade-in effect for live preview
+  useEffect(() => {
+    const preview = document.querySelector(".preview-content");
+    if (preview) {
+      preview.classList.remove("fade-in");
+      void preview.offsetWidth; // restart animation
+      preview.classList.add("fade-in");
+    }
+  }, [proposal]);
 
   // ✅ Save draft locally
   const handleSave = () => {
